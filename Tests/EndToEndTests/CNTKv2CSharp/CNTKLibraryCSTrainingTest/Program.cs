@@ -43,8 +43,8 @@ namespace CNTK.CNTKLibraryCSTrainingTest
 
         static void Main(string[] args)
         {
-            Function f = Function.Load("E:/LiqunWA/CNTK/ONNX/ONNXModelsFromCNTK/conv.onnx", DeviceDescriptor.CPUDevice, ModelFormat.ONNX);
-            PrintGraph(f.RootFunction, 0, false);
+            Function f = Function.Load("E:/LiqunWA/CNTK/ONNX/ONNXModelsFromCNTK/dense_layer.onnx", DeviceDescriptor.CPUDevice, ModelFormat.ONNX);
+            PrintGraph(f.RootFunction, 0, true);
 
             // Todo: move to a separate unit test.
             Console.WriteLine("Test CNTKLibraryCSTrainingExamples");

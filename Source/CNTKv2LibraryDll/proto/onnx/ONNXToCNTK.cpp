@@ -90,11 +90,21 @@ private:
 
 std::vector<Axis> ONNXToCNTKHelper::AttributeProtoToAxes(const AttributeProto &attributeProto)
 {
-    std::vector<int64_t> ints(attributeProto.ints().begin(), attributeProto.ints().end());
     std::vector<Axis> axes;
-    for (std::vector<int64_t>::const_iterator it = ints.begin(); it != ints.end(); it++)
+    std::vector<int64_t> ints(attributeProto.ints().begin(), attributeProto.ints().end());
+    // axes may get saved as collection or a single
+    // int CNTKToONNXHelper::ToIndex(const Axis& axis) applies axis.StaticAxisIndex() + 1
+    // to get index for ONNX. Deduct by one to get index in CNTK
+    if (ints.size() != 0)
     {
-        axes.push_back(Axis((int)(*it)));
+        for (std::vector<int64_t>::const_iterator it = ints.begin(); it != ints.end(); it++)
+        {
+            axes.push_back(Axis((int)(*it) - 1));
+        }
+    }
+    else
+    {
+        axes.push_back(Axis((int)(attributeProto.i()) - 1));
     }
     return axes;
 }
@@ -1086,14 +1096,20 @@ FunctionPtr ONNXToCNTKHelper::CreateFunction(const Node *node, const std::vector
     else if (onnxOpName == "Concat")
     {
         std::vector<Axis> axes;
-        if (HasNamedAttribute(node, "axes"))
+        if (HasNamedAttribute(node, "axis"))
         {
-            axes = GetNamedAttributeAsAxis(node, "axes");
+            axes = GetNamedAttributeAsAxis(node, "axis");
         }
         else
         {
             // TODO: Make sure they all have the same rank.
             axes.push_back(Axis(inputs[0].Shape().Rank() - 1));
+        }
+
+        if (axes.empty())
+        {
+            // default axis
+            axes.push_back(Axis(0));
         }
 
         CheckForAxes(node->Name(), axes, 1);
