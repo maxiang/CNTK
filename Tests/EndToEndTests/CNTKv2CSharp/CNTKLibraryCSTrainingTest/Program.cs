@@ -13,39 +13,8 @@ namespace CNTK.CNTKLibraryCSTrainingTest
 {
     class Program
     {
-        static void PrintGraph(Function function, int spaces, bool useName = false)
-        {
-            string indent = new string('.', spaces);
-            if (function.Inputs.Count == 0)
-            {
-                Console.WriteLine(indent + "(" + (useName ? function.Name : function.Uid) + ")" +
-                    "(" + function.OpName + ")" + function.AsString());
-                return;
-            }
-
-            foreach (var input in function.Inputs)
-            {
-                Console.WriteLine(indent + "(" + (useName ? function.Name : function.Uid) + ")" +
-                    "(" + function.OpName + ")" + "->" +
-                    "(" + (useName ? input.Name : input.Uid) + ")" + input.AsString());
-            }
-
-            foreach (var input in function.Inputs)
-            {
-                if (input.Owner != null)
-                {
-                    Function f = input.Owner;
-                    PrintGraph(f, spaces + 4, useName);
-                }
-            }
-        }
-
-
         static void Main(string[] args)
         {
-            Function f = Function.Load("E:/LiqunWA/CNTK/ONNX/ONNXModelsFromCNTK/splice.onnx", DeviceDescriptor.CPUDevice, ModelFormat.ONNX);
-            PrintGraph(f.RootFunction, 0, true);
-
             // Todo: move to a separate unit test.
             Console.WriteLine("Test CNTKLibraryCSTrainingExamples");
 #if CPUONLY
