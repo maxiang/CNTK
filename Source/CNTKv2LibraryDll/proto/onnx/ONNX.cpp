@@ -65,7 +65,7 @@ FunctionPtr ONNXFormat::Load(const std::wstring& filepath, const DeviceDescripto
 #else
     Status loadStatus = ONNXIR::Model::Load(ToString(filepath), &model);
 #endif
-    if (loadStatus.Ok())
+    if (!loadStatus.Ok())
         LogicError("Failed to load the model.");
 
     FunctionPtr cntkFunction = ONNXToCNTK::CreateGraph(model->MainGraph(), computeDevice);
