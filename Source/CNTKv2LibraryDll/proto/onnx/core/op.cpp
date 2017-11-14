@@ -44,10 +44,12 @@ namespace ONNXIR
         return *this;
     }
 
+    #pragma warning(disable : 4100) // unused p_optional
     OperatorSchemaSetter&
         OperatorSchemaSetter::Input(const std::string& p_inputName,
             const std::string& p_description,
-            const std::string& p_type)
+            const std::string& p_type,
+            bool p_optional) /* TODO: add logic for this */
     {
         m_inputs.push_back(std::make_tuple(p_inputName, p_description, p_type));
         return *this;
@@ -65,17 +67,16 @@ namespace ONNXIR
     OperatorSchemaSetter&
         OperatorSchemaSetter::Attr(const std::string& p_attrName,
             const std::string& p_description,
-            AttrType p_attrType, bool required)
+            AttrType p_attrType, bool /*required*/)
     {
         m_opSchema.m_opSignature.m_attributes.push_back(
             OpSignature::Attribute(p_attrName, p_attrType, p_description));
-
         return *this;
     }
 
 #define ATTR_SETTER_BASIC_IMPL(type, field)                                               \
-    OperatorSchemaSetter&                                                         \
-        OperatorSchemaSetter::Attr(const std::string& p_attrName,                 \
+    OperatorSchemaSetter&                                                                 \
+        OperatorSchemaSetter::Attr(const std::string& p_attrName,                         \
             const std::string& p_description,                                             \
             AttrType p_attrType,                                                          \
             const type& p_defaultValue)                                                   \
@@ -84,8 +85,8 @@ namespace ONNXIR
         a.set_name(p_attrName);                                                           \
         a.set_##field(p_defaultValue);                                                    \
                                                                                           \
-        m_opSchema.m_opSignature.m_attributes.push_back(                                    \
-            OpSignature::Attribute(p_attrName,                                         \
+        m_opSchema.m_opSignature.m_attributes.push_back(                                  \
+            OpSignature::Attribute(p_attrName,                                            \
                                         p_attrType,                                       \
                                         p_description,                                    \
                                         a));                                              \
@@ -94,8 +95,8 @@ namespace ONNXIR
     }                                                                                     \
 
 #define ATTR_SETTER_LIST_IMPL(type, field)                                                \
-    OperatorSchemaSetter&                                                         \
-        OperatorSchemaSetter::Attr(const std::string& p_attrName,                 \
+    OperatorSchemaSetter&                                                                 \
+        OperatorSchemaSetter::Attr(const std::string& p_attrName,                         \
             const std::string& p_description,                                             \
             AttrType p_attrType,                                                          \
             const std::vector<type>& p_defaultValue)                                      \
@@ -107,8 +108,8 @@ namespace ONNXIR
             a.add_##field(v);                                                             \
         }                                                                                 \
                                                                                           \
-        m_opSchema.m_opSignature.m_attributes.push_back(                                    \
-        OpSignature::Attribute(p_attrName,                                             \
+        m_opSchema.m_opSignature.m_attributes.push_back(                                  \
+        OpSignature::Attribute(p_attrName,                                                \
             p_attrType,                                                                   \
             p_description,                                                                \
             a));                                                                          \
@@ -116,16 +117,16 @@ namespace ONNXIR
     }                                                                                     \
 
     ATTR_SETTER_BASIC_IMPL(int64_t, i)
-    ATTR_SETTER_BASIC_IMPL(float, f)
-    ATTR_SETTER_BASIC_IMPL(std::string, s)
-    ATTR_SETTER_LIST_IMPL(int64_t, ints)
-    ATTR_SETTER_LIST_IMPL(float, floats)
-    ATTR_SETTER_LIST_IMPL(std::string, strings)
+        ATTR_SETTER_BASIC_IMPL(float, f)
+        ATTR_SETTER_BASIC_IMPL(std::string, s)
+        ATTR_SETTER_LIST_IMPL(int64_t, ints)
+        ATTR_SETTER_LIST_IMPL(float, floats)
+        ATTR_SETTER_LIST_IMPL(std::string, strings)
 
-    OperatorSchemaSetter&
-    OperatorSchemaSetter::TypeConstraint(const std::string& p_typeName,
-        const std::vector<std::string>& p_constraints,
-        const std::string& p_description)
+        OperatorSchemaSetter&
+        OperatorSchemaSetter::TypeConstraint(const std::string& p_typeName,
+            const std::vector<std::string>& p_constraints,
+            const std::string& p_description)
     {
         m_constraints.push_back(std::make_tuple(p_typeName, p_constraints, p_description));
         return *this;
@@ -144,6 +145,14 @@ namespace ONNXIR
             AttributeParser p_attrParser)
     {
         m_opSchema.m_attrParser = p_attrParser;
+        return *this;
+    }
+
+    OperatorSchemaSetter& OperatorSchemaSetter::FillUsing(std::function<void(OperatorSchemaSetter&)> populator)
+    {
+        if (populator) {
+            populator(*this);
+        }
         return *this;
     }
 
@@ -198,28 +207,6 @@ namespace ONNXIR
                     opSchema.m_opSignature.m_typeConstraintMap));
         }
 
-        auto& opSignature = p_opSchemaSetter.m_opSchema.m_opSignature;
-        if (0 == opSignature.m_inputs.size())
-        {
-            for (int i = 0; i < opSignature.m_onnxMinInput; ++i)
-            {
-                std::string name = "p" + std::to_string(i);
-                std::string desc = "Input Parameter " + std::to_string(i);
-                opSignature.m_inputs.push_back(
-                    OpSignature::FormalParameter(name, "", desc, opSignature.m_typeConstraintMap));
-            }
-        }
-
-        if (0 == opSignature.m_outputs.size())
-        {
-            for (int i = 0; i < opSignature.m_onnxMinOutput; ++i)
-            {
-                std::string name = "p" + std::to_string(i);
-                std::string desc = "Output Result " + std::to_string(i);
-                opSignature.m_outputs.push_back(
-                    OpSignature::FormalParameter(name, "", desc, opSignature.m_typeConstraintMap));
-            }
-        }
         OperatorSchemaRegistry::Get()->Register(p_opSchemaSetter.m_opSchema);
     }
 
@@ -246,7 +233,7 @@ namespace ONNXIR
         auto iter = m_opNameToOpSchemaMap.find(p_opSchema.GetName());
         if (m_opNameToOpSchemaMap.end() != iter)
         {
-            Status status(false,
+            Status status(ONNX, FAIL,
                 "Error: operator schema with same name ("
                 + p_opSchema.GetName() + ") exists.");
             return status;
@@ -269,85 +256,58 @@ namespace ONNXIR
     {
         if (!OpSignature::IsValidAttribute(p_attr))
         {
-            return Status(false, "Invalid AttributeProto.");
+            return Status(ONNX, FAIL, "Invalid AttributeProto.");
         }
 
-        if (p_attr.has_f())
+        p_type = p_attr.type();
+        if (AttrType::AttributeProto_AttributeType_UNDEFINED == p_type)
         {
-            p_type = AttrType::FLOAT;
+            if (p_attr.has_f())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_FLOAT;
+            }
+            else if (p_attr.has_i())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_INT;
+            }
+            else if (p_attr.has_s())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_STRING;
+            }
+            else if (p_attr.has_t())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_TENSOR;
+            }
+            else if (p_attr.has_g())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_GRAPH;
+            }
+            else if (p_attr.floats_size())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_FLOATS;
+            }
+            else if (p_attr.ints_size())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_INTS;
+            }
+            else if (p_attr.strings_size())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_STRINGS;
+            }
+            else if (p_attr.tensors_size())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_TENSORS;
+            }
+            else if (p_attr.graphs_size())
+            {
+                p_type = AttrType::AttributeProto_AttributeType_GRAPHS;
+            }
+            else
+            {
+                return Status(ONNX, FAIL, "Invalid AttributeProto.");
+            }
         }
-        else if (p_attr.has_i())
-        {
-            p_type = AttrType::INT;
-        }
-        else if (p_attr.has_s())
-        {
-            p_type = AttrType::STRING;
-        }
-        else if (p_attr.has_t())
-        {
-            p_type = AttrType::TENSOR;
-        }
-        else if (p_attr.has_g())
-        {
-            p_type = AttrType::GRAPH;
-        }
-        else if (p_attr.floats_size())
-        {
-            p_type = AttrType::FLOATS;
-        }
-        else if (p_attr.ints_size())
-        {
-            p_type = AttrType::INTS;
-        }
-        else if (p_attr.strings_size())
-        {
-            p_type = AttrType::STRINGS;
-        }
-        else if (p_attr.tensors_size())
-        {
-            p_type = AttrType::TENSORS;
-        }
-        else if (p_attr.graphs_size())
-        {
-            p_type = AttrType::GRAPHS;
-        }
-        else if (p_attr.has_type())
-        {
-            p_type = AttrType::TYPE;
-        }
-        else if (p_attr.types_size())
-        {
-            p_type = AttrType::TYPES;
-        }
-        else if (p_attr.has_shape())
-        {
-            p_type = AttrType::SHAPE;
-        }
-        else if (p_attr.has_shape())
-        {
-            p_type = AttrType::SHAPES;
-        }
-        else
-        {
-            p_type = AttrType::NONE;
-            return Status(false, "Invalid AttributeProto.");
-        }
-
         return Status::OK();
-    }
-
-    size_t ReplaceAll(std::string& s, const char* from, const char* to)
-    {
-        size_t numReplaced = 0;
-        std::string::size_type lenFrom = std::strlen(from);
-        std::string::size_type lenTo = std::strlen(to);
-        for (std::string::size_type pos = s.find(from); pos != std::string::npos;
-            pos = s.find(from, pos + lenTo)) {
-            s.replace(pos, lenFrom, to);
-            numReplaced++;
-        }
-        return numReplaced;
     }
 }
 

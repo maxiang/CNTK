@@ -12,23 +12,7 @@
 
 namespace ONNXIR
 {
-    enum class AttrType {
-        NONE,
-        FLOAT,
-        INT,
-        STRING,
-        GRAPH,
-        TENSOR,
-        TYPE,
-        SHAPE,
-        FLOATS,
-        INTS,
-        STRINGS,
-        GRAPHS,
-        TENSORS,
-        TYPES,
-        SHAPES
-    };
+    typedef AttributeProto_AttributeType AttrType;
 
     // This string array should exactly match the AttrType defined above.
     static const std::string c_attrTypeStr[14] =
@@ -38,15 +22,11 @@ namespace ONNXIR
         "STRING",
         "GRAPH",
         "TENSOR",
-        "TYPE",
-        "SHAPE",
         "FLOATS",
         "INTS",
         "STRINGS",
         "GRAPHS",
-        "TENSORS",
-        "TYPES",
-        "SHAPES"
+        "TENSORS"
     };
 
     typedef std::unordered_set<PTYPE> DataTypeSet;
@@ -178,25 +158,6 @@ namespace ONNXIR
         // Get type constraint map.
         const TypeConstraintMap& GetTypeConstraintMap() const;
 
-        // To support ONNX variable input/output compatibility.
-        // Min and Max num arguments of last input/output.
-        int GetOnnxMinInput() const { return m_onnxMinInput; }
-        int GetOnnxMaxInput() const { return m_onnxMaxInput; }
-        int GetOnnxMinOutput() const { return m_onnxMinOutput; }
-        int GetOnnxMaxOutput() const { return m_onnxMaxOutput; }
-        std::function<bool(int)> GetOnnxNumInputsAllowedFunc() const
-        {
-            return m_onnxNumInputsAllowed;
-        }
-        std::function<bool(int)> GetOnnxNumOutputsAllowedFunc() const
-        {
-            return m_onnxNumOutputsAllowed;
-        }
-        std::function<bool(int, int)> GetOnnxNumInputsOutputsAllowedFunc() const
-        {
-            return m_onnxNumInputsOutputsAllowed;
-        }
-
     private:
 
         friend class OperatorSchemaSetter;
@@ -219,19 +180,6 @@ namespace ONNXIR
 
         // Map from constraint name to DataTypeSet
         TypeConstraintMap m_typeConstraintMap;
-
-        // To support ONNX variable input/output compatibility.
-        // Min and Max num arguments of last input/output.
-        int m_onnxMinInput = 0;
-        int m_onnxMaxInput = std::numeric_limits<int>::max();
-        int m_onnxMinOutput = 0;
-        int m_onnxMaxOutput = std::numeric_limits<int>::max();
-        std::function<bool(int)> m_onnxNumInputsAllowed =
-            [](int) { return true; };
-        std::function<bool(int)> m_onnxNumOutputsAllowed =
-            [](int) { return true; };
-        std::function<bool(int, int)> m_onnxNumInputsOutputsAllowed =
-            [](int, int) { return true; };
     };
 }
 #endif

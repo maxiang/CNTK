@@ -3,9 +3,13 @@
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
 
+#pragma warning(push)
+#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456 4189 4996)
+
 #include "CNTKToONNX.h"
 #include "proto/onnx/core/model.h"
 #include "proto/onnx/core/graph.h"
+#include "proto/onnx/core/status.h"
 
 #include "Utils.h"
 #include "Operators.h"
@@ -167,9 +171,9 @@ std::unique_ptr<ONNXIR::Model> CNTKToONNX::CreateModel(const FunctionPtr& src)
     std::unique_ptr<ONNXIR::Model> model(new ONNXIR::Model("CNTKGraph", true));
     auto dstGraph = model->MainGraph();
     CNTKToONNXHelper::Copy(src, dstGraph);
-    ONNXIR::Status status = dstGraph->Resolve();
+    ONNXIR::Common::Status status = dstGraph->Resolve();
     if (!status.Ok())
-        LogicError("%s", status.ErrorMsg().c_str());
+        LogicError("%s", status.ErrorMessage().c_str());
     model->SetIrVersion(static_cast<ONNXIR::VERSION>(CNTK_ONNX_MODEL_VERSION));
     return model;
 }
@@ -881,3 +885,5 @@ void CNTKToONNXHelper::GetONNXPadAttributesFromCNTKNode(string& onnxAutoPad, std
         }
     }
 }
+
+#pragma warning(pop)

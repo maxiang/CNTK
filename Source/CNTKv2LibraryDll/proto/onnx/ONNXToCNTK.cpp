@@ -3,6 +3,9 @@
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
 
+#pragma warning(push)
+#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456 4189 4996)
+
 #include "ONNXToCNTK.h"
 #include "proto/onnx/core/graph.h"
 #include "Utils.h"
@@ -180,7 +183,7 @@ DataType ONNXToCNTKHelper::FromONNXType(ONNXIR::TypeProto type)
     }
 }
 
-// helpers copied from Lotus (Converter.cc). These functions will eventually 
+// helpers copied from ONNXIR (Converter.cc). These functions will eventually 
 // be replaced with functionalities of onnx core.
 bool IsLittleEndianOrder()
 {
@@ -1344,3 +1347,5 @@ FunctionPtr ONNXToCNTK::CreateGraph(ONNXIR::Graph* src, const DeviceDescriptor& 
         return Combine(std::vector<Variable>(functions.begin(), functions.end()));
     }
 }
+
+#pragma warning(pop)
