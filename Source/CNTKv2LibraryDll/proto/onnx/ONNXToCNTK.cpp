@@ -76,6 +76,9 @@ private:
     static size_t GetNamedAttributeAsInt64(const Node *node, const string &attributeName);
     static size_t GetNamedAttributeAsInt64(const Node *node, const string &attributeName, size_t defaultValue);
 
+    static std::vector<int> VecInt64ToVecInt(const std::vector<int64_t> &vecInt64);
+    static std::vector<int64_t> VecIntToVecInt64(const std::vector<int> &vecInt);
+
     static float GetNamedAttributeAsFloat(const Node *node, const string &attributeName);
     static float GetNamedAttributeAsFloat(const Node *node, const string &attributeName, float defaultValue);
 
@@ -111,12 +114,12 @@ std::vector<Axis> ONNXToCNTKHelper::AttributeProtoToAxes(const AttributeProto &a
     {
         for (std::vector<int64_t>::const_iterator it = ints.begin(); it != ints.end(); it++)
         {
-            axes.push_back(Axis((int)(*it) - 1));
+            axes.push_back(Axis((int)(*it)));
         }
     }
     else
     {
-        axes.push_back(Axis((int)(attributeProto.i()) - 1));
+        axes.push_back(Axis((int)(attributeProto.i())));
     }
     return axes;
 }
@@ -477,7 +480,7 @@ std::vector<Axis> ONNXToCNTKHelper::GetNamedAttributeAsAxis(const Node *node, co
 std::vector<Axis> ONNXToCNTKHelper::GetNamedAttributeAsAxis(const Node *node, const string &attributeName,
     const std::vector<Axis> &defaultAxes)
 {
-    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, true);
+    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, false);
     if (itValue == node->GetAttributes().end())
     {
         return defaultAxes;
@@ -580,7 +583,7 @@ float ONNXToCNTKHelper::GetNamedAttributeAsFloat(const Node *node, const string 
 
 string ONNXToCNTKHelper::GetNamedAttributeAsString(const Node *node, const string &attributeName)
 {
-    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, false);
+    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, true);
     const AttributeProto &attributeProto = itValue->second;
     return attributeProto.s();
 }
@@ -598,7 +601,7 @@ string ONNXToCNTKHelper::GetNamedAttributeAsString(const Node *node, const strin
 
 std::vector<int64_t> ONNXToCNTKHelper::GetNamedAttributeAsInt64Vec(const Node *node, const string &attributeName)
 {
-    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, false);
+    NodeAttributes::const_iterator itValue = FindAttributeIterator(node, attributeName, true);
     const AttributeProto &attributeProto = itValue->second;
     std::vector<int64_t> intVector(attributeProto.ints().begin(), attributeProto.ints().end());
     return intVector;
@@ -615,6 +618,28 @@ std::vector<int64_t> ONNXToCNTKHelper::GetNamedAttributeAsInt64Vec(const Node *n
     const AttributeProto &attributeProto = itValue->second;
     std::vector<int64_t> intVector(attributeProto.ints().begin(), attributeProto.ints().end());
     return intVector;
+}
+
+std::vector<int> ONNXToCNTKHelper::VecInt64ToVecInt(const std::vector<int64_t> &vecInt64)
+{
+    std::vector<int> vecInt(vecInt64.size());
+    for (int i = 0; i < vecInt64.size(); i++)
+    {
+        vecInt[i] = (int)vecInt64[i];
+    }
+
+    return vecInt;
+}
+
+std::vector<int64_t> ONNXToCNTKHelper::VecIntToVecInt64(const std::vector<int> &vecInt)
+{
+    std::vector<int64_t> vecInt64(vecInt.size());
+    for (int i = 0; i < vecInt.size(); i++)
+    {
+        vecInt64[i] = vecInt[i];
+    }
+
+    return vecInt64;
 }
 
 namespace CNTK
@@ -1153,10 +1178,31 @@ FunctionPtr ONNXToCNTKHelper::CreateFunction(const Node *node, const std::vector
     // { L"", "Split)
     else if (onnxOpName == "Slice")
     {
-        std::vector<Axis> axes = GetNamedAttributeAsAxis(node, "axes");
-        std::vector<int> beginIndex;
-        std::vector<int> endIndex;
-        FunctionPtr cntkFunction = Slice(inputs[0], axes, beginIndex, endIndex, ToWString(node->Name()));
+        // axes is optional so provide a default
+        std::vector<Axis> axes;
+        axes = GetNamedAttributeAsAxis(node, "axes", axes);
+        std::vector<int64_t> starts64 = GetNamedAttributeAsInt64Vec(node, "starts");
+        std::vector<int64_t> ends64 = GetNamedAttributeAsInt64Vec(node, "ends"); 
+
+        if (starts64.size() != ends64.size())
+        {
+            LogicError("starts (of size %d) and ends (of size %d) attributes of Slice operation shall be the same size.", 
+                (int)starts64.size(), (int)ends64.size());
+        }
+
+        std::vector<int> starts = VecInt64ToVecInt(starts64);
+        std::vector<int> ends = VecInt64ToVecInt(ends64);
+
+        if (axes.empty())
+        {
+            for (int i = 0; i < starts.size(); i++)
+            {
+                Axis axis(i);
+                axes.push_back(axis);
+            }
+        }
+
+        FunctionPtr cntkFunction = Slice(inputs[0], axes, starts, ends, ToWString(node->Name()));
         return cntkFunction;
     }
     else if (onnxOpName == "Transpose")

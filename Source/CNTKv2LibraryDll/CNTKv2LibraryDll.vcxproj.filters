@@ -85,26 +85,26 @@
     <ClCompile Include="proto\onnx\core\tensorutils.cpp">
       <Filter>proto\onnx\core</Filter>
     </ClCompile>
-    <ClCompile Include="proto\onnx\defs\activation\def.cpp">
-      <Filter>proto\onnx\defs\activation</Filter>
-    </ClCompile>
-    <ClCompile Include="proto\onnx\defs\logical\def.cpp">
-      <Filter>proto\onnx\defs\logical</Filter>
-    </ClCompile>
-    <ClCompile Include="proto\onnx\defs\math\def.cpp">
-      <Filter>proto\onnx\defs\math</Filter>
-    </ClCompile>
-    <ClCompile Include="proto\onnx\defs\nn\def.cpp">
-      <Filter>proto\onnx\defs\nn</Filter>
-    </ClCompile>
-    <ClCompile Include="proto\onnx\defs\reduction\def.cpp">
-      <Filter>proto\onnx\defs\reduction</Filter>
-    </ClCompile>
-    <ClCompile Include="proto\onnx\defs\rnn\def.cpp">
-      <Filter>proto\onnx\defs\rnn</Filter>
-    </ClCompile>
     <ClCompile Include="proto\onnx\defs\traditionalml\defs.cpp">
       <Filter>proto\onnx\defs\traditionalml</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\activation\defs.cpp">
+      <Filter>proto\onnx\defs\activation</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\math\defs.cpp">
+      <Filter>proto\onnx\defs\math</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\nn\defs.cpp">
+      <Filter>proto\onnx\defs\nn</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\reduction\defs.cpp">
+      <Filter>proto\onnx\defs\reduction</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\rnn\defs.cpp">
+      <Filter>proto\onnx\defs\rnn</Filter>
+    </ClCompile>
+    <ClCompile Include="proto\onnx\defs\logical\defs.cpp">
+      <Filter>proto\onnx\defs\logical</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -247,7 +247,7 @@ int CNTKToONNXHelper::ToIndex(const Axis& axis)
     if (axis.IsBatchAxis())
         return 0;
  
-    return axis.StaticAxisIndex() + 1;
+    return axis.StaticAxisIndex();
 }
 
 ONNXIR::TypeProto CNTKToONNXHelper::ToTypeProto(const NDShape& shape, bool hasBatchAxis)
@@ -675,7 +675,7 @@ void CNTKToONNXHelper::CopyAttributes(const FunctionPtr& src, ONNXIR::Node* node
             node->AddAttribute(attributesMap[L"reductionKeepDimensions"], keepReducedDimensions);
             node->AddAttribute("axes", ToINTS(reductionAxes));
         }
-        else if (src->OpName() == L"Transpose")
+        else if (src->OpName() == L"TransposeAxes")
         {
             std::vector<Axis> perm = AsVector<Axis>(src->Attributes()[L"axisVec"].Value<std::vector<DictionaryValue>>());
             node->AddAttribute(attributesMap[L"axisVec"], ToINTS(perm));
@@ -710,8 +710,8 @@ void CNTKToONNXHelper::CopyAttributes(const FunctionPtr& src, ONNXIR::Node* node
             }
 
             node->AddAttribute(attributesMap[L"axes"], ToINTS(sliceAxes));
-            node->AddAttribute(attributesMap[L"starts"], ToINTS(beginIndex));
-            node->AddAttribute(attributesMap[L"ends"], ToINTS(endIndex));
+            node->AddAttribute(attributesMap[L"beginIndexVec"], ToINTS(beginIndex));
+            node->AddAttribute(attributesMap[L"endIndexVec"], ToINTS(endIndex));
         }
         else if (src->OpName() == L"Softmax")
         {
