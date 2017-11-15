@@ -107,7 +107,7 @@ std::vector<Axis> ONNXToCNTKHelper::AttributeProtoToAxes(const AttributeProto &a
     // axes may get saved as collection or a single
     // int CNTKToONNXHelper::ToIndex(const Axis& axis) applies axis.StaticAxisIndex() + 1
     // to get index for ONNX. Deduct by one to get index in CNTK
-    if (ints.size() != 0)
+    if (!ints.empty())
     {
         for (std::vector<int64_t>::const_iterator it = ints.begin(); it != ints.end(); it++)
         {
@@ -622,7 +622,7 @@ std::vector<int> ONNXToCNTKHelper::VecInt64ToVecInt(const std::vector<int64_t> &
     std::vector<int> vecInt(vecInt64.size());
     for (int i = 0; i < vecInt64.size(); i++)
     {
-        vecInt[i] = (int)vecInt64[i];
+        vecInt[i] = static_cast<int>(vecInt64[i]);
     }
 
     return vecInt;
@@ -643,7 +643,7 @@ namespace CNTK
 {
     static void PrintGraph(FunctionPtr function, int spaces, bool useName = false)
     {
-        if (function->Inputs().size() == 0)
+        if (function->Inputs().empty())
         {
             cout << string(spaces, '.') + "(" + ToString(useName ? function->Name() : function->Uid()) + ")" + ToString(function->AsString()) << std::endl;
             return;
@@ -1183,7 +1183,7 @@ FunctionPtr ONNXToCNTKHelper::CreateFunction(const Node *node, const std::vector
 
         if (starts64.size() != ends64.size())
         {
-            LogicError("starts (of size %d) and ends (of size %d) attributes of Slice operation shall be the same size.", 
+            LogicError("starts (of size %d) and ends (of size %d) attributes of Slice operation must be the same size.", 
                 (int)starts64.size(), (int)ends64.size());
         }
 
@@ -1376,7 +1376,7 @@ FunctionPtr ONNXToCNTK::CreateGraph(ONNXIR::Graph* src, const DeviceDescriptor& 
         functions.push_back(constructedFunctions[*it]);
     }
 
-    if (functions.size() == 0)
+    if (functions.empty())
     {
         return nullptr;
     }
