@@ -1,6 +1,3 @@
-#pragma warning(push)
-#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456 4189 4996)
-
 #include "status.h"
 
 namespace ONNXIR
@@ -113,5 +110,3 @@ namespace ONNXIR
         }
     }
 }
-
-#pragma warning(pop)

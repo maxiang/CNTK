@@ -1,6 +1,3 @@
-#pragma warning(push)
-#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456)
-
 #include "constants.h"
 #include "utils.h"
 
@@ -46,5 +43,3 @@ namespace ONNXIR
     // may have already been added via Op Registrations which use those type strings.
     static TypeStringsInitializer& _typeStrings = TypeStringsInitializer::InitializeTypeStrings();
 }
-
-#pragma warning(pop)

@@ -3,9 +3,6 @@
 // Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 //
 
-#pragma warning(push)
-#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456 4189 4996)
-
 #include "ONNX.h"
 #include "CNTKToONNX.h"
 #include "proto/onnx/core/model.h"
@@ -71,5 +68,3 @@ FunctionPtr ONNXFormat::Load(const std::wstring& filepath, const DeviceDescripto
     FunctionPtr cntkFunction = ONNXToCNTK::CreateGraph(model->MainGraph(), computeDevice);
     return cntkFunction;
 }
-
-#pragma warning(pop)

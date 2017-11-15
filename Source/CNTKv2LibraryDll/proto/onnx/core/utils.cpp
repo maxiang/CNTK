@@ -1,12 +1,9 @@
-#pragma warning(push)
-#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456)
 #include <cctype>
 #include <iterator>
 #include <iostream>
 #include <sstream>
 
 #include "constants.h"
-#include "proto/onnx/protobuf/graph.pb.h"
 #include "utils.h"
 
 namespace ONNXIR
@@ -617,5 +614,3 @@ namespace ONNXIR
         }
     }
 }
-
-#pragma warning(pop)

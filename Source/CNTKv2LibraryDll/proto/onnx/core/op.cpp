@@ -1,6 +1,3 @@
-#pragma warning(push)
-#pragma warning(disable : 4800 4610 4512 4510 4267 4127 4125 4100 4456)
-
 #include "op.h"
 #include "opsignature.h"
 #include "utils.h"
@@ -311,5 +308,3 @@ namespace ONNXIR
         return Status::OK();
     }
 }
-
-#pragma warning(pop)
